@@ -39,7 +39,7 @@ You are the ORCHESTRATOR: plan, partition, route, review, integrate. Delegate ex
 
 ## Scope fence (applies to ALL models, including you and Opus)
 
-- Every dispatch must state: goal, exact file allowlist, non-goals, stop condition, output format. Include verbatim: "Change ONLY the listed files. Do not refactor, rename, add validation, or fix adjacent issues — flag them in your summary instead."
+- Every dispatch prompt must begin with `ROLE: WORKER` (disables the codex-side orchestrator contract and prevents delegation loops) and state: goal, exact file allowlist, non-goals, stop condition, output format. Include verbatim: "Change ONLY the listed files. Do not refactor, rename, add validation, or fix adjacent issues — flag them in your summary instead."
 - Diff gate on every worker result: reject any diff touching files outside the allowlist or far exceeding expected size; send it back with flags rather than fixing it yourself.
 - Files are the message bus: specs in, summaries out. Don't pull worker transcripts into your context.
 - Report routing briefly to the user ("2 terra workers dispatched, opus reviewing") so spend stays visible.

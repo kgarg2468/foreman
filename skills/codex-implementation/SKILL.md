@@ -33,13 +33,14 @@ codex exec -m gpt-5.6-terra --sandbox workspace-write --skip-git-repo-check \
 - Runs can exceed Bash's 10-minute timeout: pass an explicit longer timeout, or background the command and poll for the `-o` report file.
 - Parallel implementation workers MUST run in separate git worktrees (`git worktree add`) so edits don't collide. Use distinct `-o /tmp/worker-N.md` files.
 
-## Prompt template (all five parts required)
+## Prompt template (all six parts required)
 
-1. Goal — one paragraph, self-contained (the worker sees nothing else).
-2. File allowlist — exact paths the worker may modify.
-3. Non-goals — verbatim: "Change ONLY the listed files. Do not refactor, rename, add validation, or fix adjacent issues — flag them in your summary instead."
-4. Stop condition — what done looks like (tests pass, file compiles, report written).
-5. Output format — summary + list of files changed + flagged adjacent issues.
+1. `ROLE: WORKER` — verbatim first line. Disables the codex-side orchestrator contract and prevents delegation loops.
+2. Goal — one paragraph, self-contained (the worker sees nothing else).
+3. File allowlist — exact paths the worker may modify.
+4. Non-goals — verbatim: "Change ONLY the listed files. Do not refactor, rename, add validation, or fix adjacent issues — flag them in your summary instead."
+5. Stop condition — what done looks like (tests pass, file compiles, report written).
+6. Output format — summary + list of files changed + flagged adjacent issues.
 
 ## After the worker returns
 

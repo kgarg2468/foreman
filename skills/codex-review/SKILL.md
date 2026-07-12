@@ -29,7 +29,7 @@ codex -C "$PWD" review --base main - < "$PROMPT" > "$REPORT"
 ```
 
 - Model/effort: default review runs on the config default model; for a heavier audit pass, add `-c model="gpt-5.6-sol" -c model_reasoning_effort="high"`.
-- The prompt file should state what the change was supposed to do, known risk areas, and what to prioritize (correctness > regressions > style — style feedback from GPT is low-value; taste review stays with Fable/Opus).
+- The prompt file must begin with `ROLE: WORKER` (disables the codex-side orchestrator contract) and state what the change was supposed to do, known risk areas, and what to prioritize (correctness > regressions > style — style feedback from GPT is low-value; taste review stays with Fable/Opus).
 
 ## Presenting results
 
