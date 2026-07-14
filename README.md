@@ -1,4 +1,4 @@
-# claude-orchestrator
+# foreman
 
 Global orchestration setup for both manager families, across every harness that runs them (Claude Code, Codex CLI, Conductor, T3 Code):
 
@@ -23,10 +23,10 @@ Which contract is active depends only on which model family you launch. Every di
 Paste this to Claude Code (or any agent with shell access) on the target machine:
 
 ```text
-Set up my Claude orchestrator config from https://github.com/kgarg2468/claude-orchestrator
+Set up my foreman orchestrator config from https://github.com/kgarg2468/foreman
 
-1. Clone the repo to ~/Documents/Projects/claude-orchestrator (private repo — use my
-   authenticated gh CLI: `gh repo clone kgarg2468/claude-orchestrator`).
+1. Clone the repo to ~/Documents/Projects/foreman:
+   `gh repo clone kgarg2468/foreman`
 
 2. Verify prerequisites, and tell me about anything missing instead of working around it:
    - `claude` CLI installed and logged in
