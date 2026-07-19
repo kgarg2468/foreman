@@ -1,6 +1,6 @@
 ---
 name: codex-review
-description: Ask Codex CLI (gpt-5.6) for an independent code review of uncommitted changes, a branch diff, or a specific implementation. Use when the user asks for a Codex or GPT review, when the CLAUDE.md routing calls for an extra independent review perspective, or when a diff should be audited for bugs and regressions by a different model family. For a review by Claude itself, use the normal review process instead.
+description: Ask Codex CLI (gpt-5.6-sol at xhigh) for an independent code review of uncommitted changes, a branch diff, or a specific implementation. Use when the user asks for a Codex or GPT review, when CLAUDE.md routing calls for an extra independent review perspective, or when a diff should be audited for bugs and regressions by a different model family. For a review by Claude itself, use the normal review process instead.
 ---
 
 # Codex Review
@@ -22,13 +22,16 @@ REPORT="$ARTIFACT_DIR/report.md"
 PROMPT="$ARTIFACT_DIR/prompt.md"
 
 # Review staged, unstaged, and untracked changes
-codex -C "$PWD" review --uncommitted - < "$PROMPT" > "$REPORT"
+codex -C "$PWD" review --uncommitted \
+  -c model="gpt-5.6-sol" -c model_reasoning_effort="xhigh" \
+  - < "$PROMPT" > "$REPORT"
 
 # Review current branch against a base branch
-codex -C "$PWD" review --base main - < "$PROMPT" > "$REPORT"
+codex -C "$PWD" review --base main \
+  -c model="gpt-5.6-sol" -c model_reasoning_effort="xhigh" \
+  - < "$PROMPT" > "$REPORT"
 ```
 
-- Model/effort: default review runs on the config default model; for a heavier audit pass, add `-c model="gpt-5.6-sol" -c model_reasoning_effort="high"`.
 - The prompt file must begin with `ROLE: WORKER` (disables the codex-side orchestrator contract) and state what the change was supposed to do, known risk areas, and what to prioritize (correctness > regressions > style — style feedback from GPT is low-value; taste review stays with Fable/Opus).
 
 ## Presenting results

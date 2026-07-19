@@ -1,6 +1,6 @@
 ---
 name: dispatch-workers
-description: Dispatch worker agents (gpt-5.6 sol/terra/luna via codex exec, or Claude opus-4.8 via claude -p) for bounded implementation, refactors, bulk analysis, or discovery, per the orchestrator contract in AGENTS.md. Use when routing execution work to workers.
+description: Dispatch worker agents (gpt-5.6-sol via codex exec, or Claude opus-4.8 / fable-5 via claude -p) for bounded implementation, refactors, bulk analysis, discovery, taste, or judgment escalate, per AGENTS.md. Use when routing execution work to workers.
 ---
 
 # Dispatch Workers
@@ -9,27 +9,38 @@ Workers are stateless: give full context, expect a summary back, then review the
 
 ## Model + effort selection
 
-- `gpt-5.6-terra` + `high`: default for scoped implementation and debugging.
-- `gpt-5.6-sol` + `high`: hard shards only (long-horizon, multi-file, gnarly). `xhigh`/`max` for one genuinely hard problem; `ultra` when one large task splits into parallel streams (sol self-spawns subagents — prefer this over a hand-rolled sol swarm).
-- `gpt-5.6-luna` + `medium`: bulk reads, summaries, extraction, mechanical edits (`low` for renames/formatting).
-- `opus-4.8`: taste-critical implementation (UI, copy, public APIs). Bills the Claude subscription — use deliberately.
-- Never omit effort — this machine's config default is `ultra`.
+GPT — only `gpt-5.6-sol`:
+
+- `low`: bulk reads, summaries, extraction, mechanical edits
+- `xhigh`: DEFAULT scoped implementation and debugging
+- `max`: rare — one tightly-coupled hard problem
+- `ultra`: rare — large task that truly parallelizes
+
+Claude:
+
+- `opus-4.8` + `xhigh`: default taste / cross-review (UI, copy, public APIs, significant diffs)
+- `fable-5` + `high`: rare judgment escalate (architecture, synthesis, taste ceiling). Never ultracode. Never security/cyber/bio.
+
+Never omit GPT effort — this machine's config default is `ultra`. Never use terra or luna.
 
 ## Command shapes
 
 ```bash
-# GPT worker, read-only discovery / analysis
-codex exec -m gpt-5.6-luna --sandbox read-only --skip-git-repo-check \
-  -c model_reasoning_effort="medium" \
+# GPT worker, read-only / bulk
+codex exec -m gpt-5.6-sol --sandbox read-only --skip-git-repo-check \
+  -c model_reasoning_effort="low" \
   -o /tmp/worker-1.md "PROMPT" < /dev/null
 
-# GPT worker, implementation (writes allowed in workspace)
-codex exec -m gpt-5.6-terra --sandbox workspace-write --skip-git-repo-check \
-  -c model_reasoning_effort="high" --cd /path/to/repo \
+# GPT worker, implementation
+codex exec -m gpt-5.6-sol --sandbox workspace-write --skip-git-repo-check \
+  -c model_reasoning_effort="xhigh" --cd /path/to/repo \
   -o /tmp/worker-1.md "PROMPT" < /dev/null
 
-# Claude opus worker (taste lane)
-claude -p --model opus "PROMPT" < /dev/null
+# Opus taste / review worker
+claude -p --model opus --effort xhigh "PROMPT" < /dev/null
+
+# Fable judgment escalate (rare)
+claude -p --model fable --effort high "PROMPT" < /dev/null
 ```
 
 - Always close stdin (`< /dev/null`) — codex hangs waiting on it otherwise.
@@ -39,7 +50,7 @@ claude -p --model opus "PROMPT" < /dev/null
 
 ## Prompt template (all six parts required)
 
-1. `ROLE: WORKER` — verbatim first line. This disables orchestration for the worker and prevents delegation loops.
+1. `ROLE: WORKER` — verbatim first line. This disables orchestration for the worker and prevents delegation loops (required for Opus and Fable too — they load CLAUDE.md).
 2. Goal — one paragraph, self-contained (the worker sees nothing else).
 3. File allowlist — exact paths the worker may modify.
 4. Non-goals — verbatim: "Change ONLY the listed files. Do not refactor, rename, add validation, or fix adjacent issues — flag them in your summary instead."

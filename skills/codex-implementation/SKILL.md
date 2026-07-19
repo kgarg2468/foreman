@@ -1,30 +1,34 @@
 ---
 name: codex-implementation
-description: Dispatch OpenAI Codex CLI (gpt-5.6 sol/terra/luna) as a worker for bounded implementation, refactors, migrations, bulk analysis, or codebase discovery. This is how GPT workers are invoked for execution work. Use when the orchestrator routes implementation shards, mechanical work, or parallel workstreams to Codex per the model roster in CLAUDE.md.
+description: Dispatch OpenAI Codex CLI (gpt-5.6-sol at low/xhigh/max/ultra) as a worker for bounded implementation, refactors, migrations, bulk analysis, or codebase discovery. Use when the orchestrator routes execution work to Codex per CLAUDE.md.
 ---
 
 # Codex Implementation Worker
 
-Dispatch scoped execution work to a GPT-5.6 worker. Workers are stateless: give full context, expect a summary back, then review the diff yourself.
+Dispatch scoped execution work to gpt-5.6-sol. Workers are stateless: give full context, expect a summary back, then review the diff yourself.
 
 ## Model + effort selection
 
-- `gpt-5.6-terra` + `high`: default for scoped implementation and debugging.
-- `gpt-5.6-sol` + `high`: long-horizon, multi-file, or hard problems. `xhigh`/`max` for one genuinely hard problem; `ultra` only when the task splits into parallel streams (sol self-spawns subagents).
-- `gpt-5.6-luna` + `medium`: bulk reads, summaries, extraction, mechanical edits (`low` for renames/formatting).
-- Never omit `-c model_reasoning_effort=...` — the user's config default is `ultra`.
+Only model: `gpt-5.6-sol`. Pick effort:
+
+- `low`: bulk reads, summaries, extraction, mechanical edits, renames/formatting
+- `xhigh`: DEFAULT for scoped implementation and debugging
+- `max`: rare — one tightly-coupled hard problem
+- `ultra`: rare — large task that truly parallelizes (Sol self-spawns subagents)
+
+Never omit `-c model_reasoning_effort=...` — the user's config default is `ultra`. Never use terra or luna.
 
 ## Command shapes
 
 ```bash
-# Read-only discovery / analysis
-codex exec -m gpt-5.6-luna --sandbox read-only --skip-git-repo-check \
-  -c model_reasoning_effort="medium" \
+# Read-only discovery / bulk analysis
+codex exec -m gpt-5.6-sol --sandbox read-only --skip-git-repo-check \
+  -c model_reasoning_effort="low" \
   -o /tmp/codex-report.md "PROMPT" < /dev/null
 
 # Implementation (writes allowed in workspace)
-codex exec -m gpt-5.6-terra --sandbox workspace-write --skip-git-repo-check \
-  -c model_reasoning_effort="high" --cd /path/to/repo \
+codex exec -m gpt-5.6-sol --sandbox workspace-write --skip-git-repo-check \
+  -c model_reasoning_effort="xhigh" --cd /path/to/repo \
   -o /tmp/codex-report.md "PROMPT" < /dev/null
 ```
 
@@ -35,7 +39,7 @@ codex exec -m gpt-5.6-terra --sandbox workspace-write --skip-git-repo-check \
 
 ## Prompt template (all six parts required)
 
-1. `ROLE: WORKER` — verbatim first line. Disables the codex-side orchestrator contract and prevents delegation loops.
+1. `ROLE: WORKER` — verbatim first line. Disables orchestrator contracts and prevents delegation loops.
 2. Goal — one paragraph, self-contained (the worker sees nothing else).
 3. File allowlist — exact paths the worker may modify.
 4. Non-goals — verbatim: "Change ONLY the listed files. Do not refactor, rename, add validation, or fix adjacent issues — flag them in your summary instead."

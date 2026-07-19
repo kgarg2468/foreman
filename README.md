@@ -2,21 +2,35 @@
 
 Global orchestration setup for both manager families, across every harness that runs them (Claude Code, Codex CLI, Conductor, T3 Code):
 
-- **Claude side**: Fable 5 (or Opus) manages, dispatching GPT-5.6 workers via Codex CLI.
-- **Codex side**: GPT-5.6 Sol manages, dispatching terra/luna/sol workers and Opus 4.8 for taste-critical work and cross-family review.
+- **Claude side**: Fable 5 manages at **high** effort (locked), dispatching `gpt-5.6-sol` workers (low / xhigh / max / ultra) and Opus at xhigh for taste.
+- **Codex side**: GPT-5.6 Sol manages, dispatching the same Sol effort ladder, Opus at xhigh for default taste/review, and Fable at high for rare judgment escalate.
 
 Which contract is active depends only on which model family you launch. Every dispatched worker prompt starts with a `ROLE: WORKER` sentinel, which drops the worker out of manager mode — one level of hierarchy, no delegation loops.
+
+## Worker ladder
+
+| Lane | Model + effort |
+|---|---|
+| Bulk / mechanical | sol + low |
+| Default implement / debug / GPT review | sol + xhigh |
+| Hardest single-thread | sol + max (rare) |
+| Parallel mega-task | sol + ultra (rare) |
+| Default taste / cross-review | opus + xhigh |
+| Judgment escalate (Codex side) | fable + high (rare) |
+| Manager (Claude side) | fable + high (locked) |
+
+No Terra, Luna, Sonnet, Haiku, or Opus ultracode for dispatched workers.
 
 ## What's in here
 
 | Path | Installs to | Purpose |
 |---|---|---|
-| `CLAUDE.md` | `~/.claude/CLAUDE.md` | Claude-side orchestrator contract (Fable/Opus as manager) |
-| `skills/codex-implementation/` | `~/.claude/skills/codex-implementation/` | Claude-side: dispatching Codex workers |
+| `CLAUDE.md` | `~/.claude/CLAUDE.md` | Claude-side orchestrator contract (Fable as manager) |
+| `skills/codex-implementation/` | `~/.claude/skills/codex-implementation/` | Claude-side: dispatching Sol workers |
 | `skills/codex-review/` | `~/.claude/skills/codex-review/` | Claude-side: independent review via `codex review` |
 | `codex/AGENTS.md` | `~/.codex/AGENTS.md` | Codex-side orchestrator contract (Sol as manager) |
-| `codex/skills/dispatch-workers/` | `~/.codex/skills/dispatch-workers/` | Codex-side: dispatching GPT and Opus workers |
-| `codex/skills/cross-review/` | `~/.codex/skills/cross-review/` | Codex-side: cross-family review (Opus or fresh Sol) |
+| `codex/skills/dispatch-workers/` | `~/.codex/skills/dispatch-workers/` | Codex-side: dispatching Sol / Opus / Fable workers |
+| `codex/skills/cross-review/` | `~/.codex/skills/cross-review/` | Codex-side: cross-family review |
 
 ## Setup on a new machine
 
@@ -44,17 +58,17 @@ Set up my foreman orchestrator config from https://github.com/kgarg2468/foreman
    - ln -sfn <repo>/codex/skills/cross-review ~/.codex/skills/cross-review
 
 4. Smoke-test the worker path (should print READY in a few seconds):
-   codex exec -m gpt-5.6-luna --sandbox read-only --skip-git-repo-check \
+   codex exec -m gpt-5.6-sol --sandbox read-only --skip-git-repo-check \
      -c model_reasoning_effort="low" "Reply with exactly one word: READY" < /dev/null
 
 5. Smoke-test that both contracts load:
-   claude -p --model haiku "In one sentence: per your global instructions, which models
-   handle bulk mechanical work?" < /dev/null
-   Expected: an answer mentioning luna/terra.
+   claude -p --model opus --effort high "In one sentence: per your global instructions,
+   which model and effort handle bulk mechanical work, and what is your manager effort?" < /dev/null
+   Expected: sol at low for bulk; manager effort high (locked).
    codex exec -m gpt-5.6-sol --sandbox read-only --skip-git-repo-check \
      -c model_reasoning_effort="low" "In one sentence: per your global instructions,
-     what is your role?" < /dev/null
-   Expected: an answer saying it is the orchestrator.
+     what is your role and which model handles default taste review?" < /dev/null
+   Expected: orchestrator; opus at xhigh for taste.
 
 6. Smoke-test the worker sentinel: rerun the sol command from step 5 with the prompt
    prefixed by the line "ROLE: WORKER". Expected: it now says it is a worker and may
