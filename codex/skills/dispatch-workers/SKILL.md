@@ -1,6 +1,6 @@
 ---
 name: dispatch-workers
-description: Dispatch worker agents (gpt-5.6-sol via codex exec, or Claude opus-4.8 / fable-5 via claude -p) for bounded implementation, refactors, bulk analysis, discovery, taste, or judgment escalate, per AGENTS.md. Use when routing execution work to workers.
+description: Dispatch worker agents (gpt-5.6-sol via codex exec, or Claude opus/fable via claude-opus / claude-fable Bedrock wrappers) for bounded implementation, refactors, bulk analysis, discovery, taste, or judgment escalate, per AGENTS.md. Use when routing execution work to workers.
 ---
 
 # Dispatch Workers
@@ -36,13 +36,14 @@ codex exec -m gpt-5.6-sol --sandbox workspace-write --skip-git-repo-check \
   -c model_reasoning_effort="xhigh" --cd /path/to/repo \
   -o /tmp/worker-1.md "PROMPT" < /dev/null
 
-# Opus taste / review worker
-claude -p --model opus --effort xhigh "PROMPT" < /dev/null
+# Opus taste / review worker (Bedrock credits via wrapper)
+claude-opus -p --effort xhigh "PROMPT" < /dev/null
 
-# Fable judgment escalate (rare)
-claude -p --model fable --effort high "PROMPT" < /dev/null
+# Fable judgment escalate (rare; Bedrock credits via wrapper)
+claude-fable -p --effort high "PROMPT" < /dev/null
 ```
 
+- Always use `claude-opus` / `claude-fable` — never plain `claude --model opus|fable` (skips Bedrock). Do not pass `--model`; wrappers pin the Bedrock model ID.
 - Always close stdin (`< /dev/null`) — codex hangs waiting on it otherwise.
 - Long specs: write to a temp markdown file and tell the worker to read it.
 - Long runs: explicit shell timeout, or background and poll the `-o` report file.

@@ -41,8 +41,9 @@ Higher effort increases over-editing — the scope fence below is mandatory, dou
 
 - Dispatch via the `dispatch-workers` skill (command shapes, prompt template). Reviews via the `cross-review` skill.
 - GPT workers: `codex exec -m gpt-5.6-sol --sandbox ... --skip-git-repo-check -c model_reasoning_effort="..." -o /tmp/worker-N.md "PROMPT" < /dev/null`.
-- Opus workers: `claude -p --model opus --effort xhigh "PROMPT" < /dev/null`.
-- Fable workers: `claude -p --model fable --effort high "PROMPT" < /dev/null` (judgment escalate only; prompt MUST begin with `ROLE: WORKER`).
+- Opus workers (Bedrock via wrapper): `claude-opus -p --effort xhigh "PROMPT" < /dev/null`. Do NOT use plain `claude --model opus` — that skips Bedrock credits.
+- Fable workers (Bedrock via wrapper): `claude-fable -p --effort high "PROMPT" < /dev/null` (judgment escalate only; prompt MUST begin with `ROLE: WORKER`). Do NOT pass `--model` — the wrapper pins the Bedrock model ID.
+- Wrappers must be on PATH (`~/.local/bin/claude-opus`, `~/.local/bin/claude-fable`). They set Bedrock auth + isolated `CLAUDE_CONFIG_DIR`; worker behavior comes from the `ROLE: WORKER` prompt, not from `~/.claude/CLAUDE.md`.
 - Long runs: pass an explicit shell timeout or background and poll the `-o` report file.
 - Parallel implementation workers must run in separate git worktrees so edits don't collide.
 

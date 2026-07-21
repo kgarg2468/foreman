@@ -46,7 +46,7 @@ Higher effort increases over-editing — scope-fencing below is mandatory, doubl
 - Codex runs can exceed Bash's 10-min timeout: pass an explicit timeout, or background and poll for the report file (`-o /tmp/worker-N.md`).
 - Parallel codex implementation agents must work in separate git worktrees so edits don't collide.
 - Inside workflows/subagents (model param only takes Claude models): spawn a thin opus wrapper whose prompt is to write a self-contained codex prompt, run it via Bash, and return the report. Label it with a `gpt:` prefix so the real worker is visible.
-- Opus workers: `claude -p --model opus --effort xhigh "PROMPT" < /dev/null`, or native Task-tool subagent with model opus at xhigh effort.
+- Opus workers (Bedrock via wrapper): `claude-opus -p --effort xhigh "PROMPT" < /dev/null`. Do NOT use plain `claude --model opus` — that skips Bedrock credits. Native Task-tool opus subagents are fine inside a Claude Code session; for shell dispatches always use the wrapper.
 
 ## Scope fence (applies to ALL models, including you and Opus)
 
