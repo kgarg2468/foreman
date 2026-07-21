@@ -43,9 +43,7 @@ Set up my foreman orchestrator config from https://github.com/kgarg2468/foreman
    `gh repo clone kgarg2468/foreman`
 
 2. Verify prerequisites, and tell me about anything missing instead of working around it:
-   - `claude` CLI installed
-   - `claude-opus` and `claude-fable` wrappers on PATH (Bedrock entrypoints; used by Codex
-     dispatches — never plain `claude --model opus|fable`)
+   - `claude` CLI installed and logged in
    - `codex` CLI installed (`npm i -g @openai/codex`) and authenticated (`codex login`)
    - `git` available
 
@@ -64,18 +62,13 @@ Set up my foreman orchestrator config from https://github.com/kgarg2468/foreman
      -c model_reasoning_effort="low" "Reply with exactly one word: READY" < /dev/null
 
 5. Smoke-test that both contracts load:
-   # Claude-side contract (use your normal Fable/Opus Claude Code session, or):
-   claude -p --effort high "In one sentence: per your global instructions, which model
-   and effort handle bulk mechanical work, and what is your manager effort?" < /dev/null
+   claude -p --model opus --effort high "In one sentence: per your global instructions,
+   which model and effort handle bulk mechanical work, and what is your manager effort?" < /dev/null
    Expected: sol at low for bulk; manager effort high (locked).
    codex exec -m gpt-5.6-sol --sandbox read-only --skip-git-repo-check \
      -c model_reasoning_effort="low" "In one sentence: per your global instructions,
-     what is your role and which CLI handles default taste review?" < /dev/null
-   Expected: orchestrator; claude-opus at xhigh for taste.
-
-5b. Smoke-test Bedrock wrappers (Codex's Claude path):
-   claude-opus -p --effort xhigh "Reply with exactly one word: READY" < /dev/null
-   Expected: READY (bills Bedrock, not Anthropic subscription).
+     what is your role and which model handles default taste review?" < /dev/null
+   Expected: orchestrator; opus at xhigh for taste.
 
 6. Smoke-test the worker sentinel: rerun the sol command from step 5 with the prompt
    prefixed by the line "ROLE: WORKER". Expected: it now says it is a worker and may
@@ -91,6 +84,4 @@ Edit files here, commit, push. Machines using symlinks pick up changes on `git p
 ## Notes
 
 - Codex model/effort defaults live in `~/.codex/config.toml` per machine and are intentionally NOT managed by this repo — the contract instructs workers to always set model and effort explicitly, so local config defaults don't leak into dispatches.
-- Claude taste/judgment workers from Codex must go through `claude-opus` / `claude-fable` (Bedrock wrappers on PATH). Plain `claude --model opus|fable` bills the wrong account.
-- Those wrappers use isolated config dirs (`~/.claude-opus`, `~/.claude-fable`), so they do not load `~/.claude/CLAUDE.md`. Worker behavior is enforced by the `ROLE: WORKER` prompt prefix.
-- On a work machine, remember Sol dispatches route code through your personal OpenAI subscription — check your employer's data policy first.
+- On a work machine, remember this routes code through your personal OpenAI subscription — check your employer's data policy first.

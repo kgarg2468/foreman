@@ -20,15 +20,15 @@ Cross-family review is the default for significant diffs: you (or your workers) 
 3. Run the reviewer and capture the report:
 
 ```bash
-# Opus review of a diff (default Claude lane; Bedrock via wrapper)
+# Opus review of a diff (default Claude lane)
 git diff main... > /tmp/review-diff.patch
-claude-opus -p --effort xhigh "ROLE: WORKER
+claude -p --model opus --effort xhigh "ROLE: WORKER
 Review this diff for taste, API design, and correctness.
 Context: <what it does>. Diff follows:
 $(cat /tmp/review-diff.patch)" < /dev/null > /tmp/review-report.md
 
-# Fable judgment escalate (rare; Bedrock via wrapper)
-claude-fable -p --effort high "ROLE: WORKER
+# Fable judgment escalate (rare)
+claude -p --model fable --effort high "ROLE: WORKER
 Judgment review — architecture, synthesis, taste ceiling.
 Context: <what it does>. Diff follows:
 $(cat /tmp/review-diff.patch)" < /dev/null > /tmp/review-report.md
